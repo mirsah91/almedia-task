@@ -8,17 +8,23 @@ export class OfferService {
 
     @Cron(CronExpression.EVERY_5_SECONDS)
     async processProvidersData() {
-        const [providerAData, providerBData, providerCData] = await Promise.allSettled([
+        const providerData = await Promise.allSettled([
             this.providerService.getProviderAOffers(),
             this.providerService.getProviderBOffers(),
             this.providerService.getProviderCOffers()
         ]);
 
-        console.log('providerAData --->', providerAData);
-        console.log('providerBData --->', providerBData);
-        console.log('providerCData --->', providerCData);
+        const filteredProviderData = providerData
+            .map((promise) => {
+                if (promise.status === 'fulfilled') {
+                    return promise.value;
+                }
 
+                return null;
+            })
+            .filter(data => !!data)
+
+        console.log('filteredProviderData -->', filteredProviderData);
         // save to db
     }
-
 }
